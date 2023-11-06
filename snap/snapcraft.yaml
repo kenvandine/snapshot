@@ -55,6 +55,16 @@ parts:
     prime:
       - usr/lib/*/gstreamer-1.0/libgstopengl.so
 
+  cleanup:
+    after: [snapshot]
+    plugin: nil
+    build-snaps: [core22, gnome-42-2204]
+    override-prime: |
+      set -eux
+      for snap in "core22" "gnome-42-2204"; do
+        cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$CRAFT_PRIME/{}" \;
+      done
+
   snapshot:
     after: [ rustup ]
     plugin: meson
