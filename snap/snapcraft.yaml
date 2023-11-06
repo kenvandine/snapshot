@@ -47,6 +47,14 @@ parts:
       - usr/lib/*/gstreamer-1.0/*.so
       - usr/share/pipewire
 
+# should perhaps be in the sdk instead
+  gstreamer:
+    plugin: nil
+    stage-packages:
+      - gstreamer1.0-gl
+    prime:
+      - usr/lib/*/gstreamer-1.0/libgstopengl.so
+
   snapshot:
     after: [ rustup ]
     plugin: meson
