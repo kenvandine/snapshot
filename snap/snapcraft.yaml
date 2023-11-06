@@ -28,6 +28,43 @@ parts:
     override-prime: |
       echo 'Skip Prime'
 
+  pipewire:
+    source: https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/0.3.79/pipewire-0.3.79.tar.gz
+    plugin: meson
+    meson-parameters:
+      - --prefix=/usr
+      - --buildtype=release
+      - --strip
+      - -Dalsa=disabled
+      - -Dpipewire-alsa=disabled
+      - -Djack=disabled
+      - -Dpipewire-jack=disabled
+      - -Dsession-managers=[]
+    prime:
+      - usr/lib/*/pipewire-*
+      - usr/lib/*/spa-*
+      - usr/lib/*/libpipewire*.so*
+      - usr/lib/*/gstreamer-1.0/*.so
+      - usr/share/pipewire
+
+# should perhaps be in the sdk instead
+  gstreamer:
+    plugin: nil
+    stage-packages:
+      - gstreamer1.0-gl
+    prime:
+      - usr/lib/*/gstreamer-1.0/libgstopengl.so
+
+  cleanup:
+    after: [snapshot]
+    plugin: nil
+    build-snaps: [core22, gnome-42-2204]
+    override-prime: |
+      set -eux
+      for snap in "core22" "gnome-42-2204"; do
+        cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$CRAFT_PRIME/{}" \;
+      done
+
   snapshot:
     after: [ rustup ]
     plugin: meson
@@ -60,6 +97,10 @@ apps:
     desktop: usr/share/applications/org.gnome.Snapshot.desktop
     extensions: [ gnome ]
     common-id: org.gnome.Snapshot
+    environment:
+      PIPEWIRE_CONFIG_NAME: "$SNAP/usr/share/pipewire/pipewire.conf"
+      PIPEWIRE_MODULE_DIR: "$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pipewire-0.3"
+      SPA_PLUGIN_DIR: "$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/spa-0.2"
     plugs:
       - camera
       - audio-playback
